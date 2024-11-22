@@ -10,4 +10,4 @@ const db_1 = require("./db");
 const app = (0, express_1.default)();
 app.use(express_1.default.json());
 app.use("/", main_1.router);
-app.listen(3000, () => console.log("server is up and running on port 3000"));
+app.listen(4000, () => console.log("server is up and running on port 4000"));

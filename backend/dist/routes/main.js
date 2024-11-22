@@ -20,9 +20,26 @@ const zod_1 = require("zod");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const authMiddleware_1 = require("../middlewares/authMiddleware");
+const generative_ai_1 = require("@google/generative-ai");
 dotenv_1.default.config();
 const URL = "/api/v1";
 const JwtSecret = process.env.JWT_SECRET;
+const gemini_api_key = process.env.GEMINI_API_KEY;
+function AiPipeline() {
+    return __awaiter(this, void 0, void 0, function* () {
+        const genAI = new generative_ai_1.GoogleGenerativeAI(gemini_api_key);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = "Explain how AI works";
+        try {
+            const result = yield model.generateContent(prompt);
+            return result.response.text();
+        }
+        catch (error) {
+            console.error("Error in AiPipeline:", error);
+            throw new Error("AI Pipeline failed");
+        }
+    });
+}
 exports.router = express_1.default.Router();
 // router.use(express.json());
 //signup route
@@ -97,6 +114,7 @@ exports.router.post(`${URL}/signin`, (req, res) => __awaiter(void 0, void 0, voi
         });
     }
 }));
+//posting content
 exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { link, type, title, userId } = req.body;
     try {
@@ -118,6 +136,22 @@ exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res
         });
     }
 }));
+//query using ai
+exports.router.get(`${URL}/queryai`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const resp = yield AiPipeline();
+        res.json({
+            message: "queried ai model successfully",
+            resp
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "error while quering ai model", error
+        });
+    }
+}));
+//get content
 exports.router.get(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.body.userId;
     try {
@@ -134,7 +168,46 @@ exports.router.get(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res)
         });
     }
 }));
-exports.router.delete("api/v1/content", (req, res) => {
-});
-exports.router.post("api/v1/brain/:shareLink", (req, res) => {
-});
+//delete content
+exports.router.delete(`${URL}/content`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const contentId = req.body.contentId;
+    try {
+        yield schema_1.Content.deleteMany({
+            contentId,
+            userId: req.body.userId
+        });
+        res.json({
+            message: "deleted content"
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            error
+        });
+    }
+}));
+// router.post(`${URL}/brain/share`, (req, res) => {
+//    const { data } = req.body;
+//    if (!data) {
+//         res.status(400).json({ error: 'Data to share is required' });
+//    }
+//    const shareLink = generateShareLink(data);
+//    res.status(201).json({
+//        message: 'Share link created successfully',
+//        shareLink
+//    });
+// });
+// router.get(`${URL}/brain/:shareLink`, (req, res) => {
+//    const { shareLink } = req.params;
+//    if (!shareLink) {
+//         res.status(400).json({ error: 'Share link is required' });
+//    }
+//    const sharedData = fetchSharedData(shareLink);
+//    if (!sharedData) {
+//         res.status(404).json({ error: 'Shared data not found' });
+//    }
+//    res.status(200).json({
+//        message: 'Shared data retrieved successfully',
+//        data: sharedData
+//    });
+// });

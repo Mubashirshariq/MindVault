@@ -11,4 +11,4 @@ app.use(express.json());
 
 app.use("/",router);
 
-app.listen(3000, () => console.log("server is up and running on port 3000"));
+app.listen(4000, () => console.log("server is up and running on port 4000"));

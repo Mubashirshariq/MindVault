@@ -5,13 +5,31 @@ import { z } from "zod";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import dotenv from "dotenv"
 import {authMiddleware} from "../middlewares/authMiddleware";
-
+import {GoogleGenerativeAI} from "@google/generative-ai"
 dotenv.config();
 
 
 const URL:string="/api/v1"
 const JwtSecret:string=process.env.JWT_SECRET as string;
+const gemini_api_key:string=process.env.GEMINI_API_KEY as string;
+
+async function AiPipeline() {
+   const genAI = new GoogleGenerativeAI(gemini_api_key);
+   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+   const prompt = "Explain how AI works";
+
+   try {
+       const result = await model.generateContent(prompt);
+       return result.response.text();
+   } catch (error) {
+       console.error("Error in AiPipeline:", error);
+       throw new Error("AI Pipeline failed");
+   }
+}
+
 export const router=express.Router();
+
 
 // router.use(express.json());
 //signup route
@@ -104,7 +122,6 @@ router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
          tags:[],
          userId
       })
-
       res.json({
          message:"content created succesfully",
          content
@@ -114,9 +131,21 @@ router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
          message:"error while posting content ",error
       })
     }
+})
 
-
-
+//query using ai
+router.get(`${URL}/queryai`,async (req,res)=>{
+   try {
+      const resp=await AiPipeline();
+      res.json({
+         message:"queried ai model successfully",
+         resp
+      })
+   } catch (error) {
+      res.status(404).json({
+         message:"error while quering ai model",error
+      })
+   }
 })
 
 //get content
@@ -157,32 +186,32 @@ router.delete(`${URL}/content`,async (req,res)=>{
     }
 })
 
-router.post(`${URL}/brain/share`, (req, res) => {
-   const { data } = req.body;
-   if (!data) {
-        res.status(400).json({ error: 'Data to share is required' });
-   }
-   const shareLink = generateShareLink(data);
-   res.status(201).json({
-       message: 'Share link created successfully',
-       shareLink
-   });
-});
+// router.post(`${URL}/brain/share`, (req, res) => {
+//    const { data } = req.body;
+//    if (!data) {
+//         res.status(400).json({ error: 'Data to share is required' });
+//    }
+//    const shareLink = generateShareLink(data);
+//    res.status(201).json({
+//        message: 'Share link created successfully',
+//        shareLink
+//    });
+// });
 
-router.get(`${URL}/brain/:shareLink`, (req, res) => {
-   const { shareLink } = req.params;
-   if (!shareLink) {
-        res.status(400).json({ error: 'Share link is required' });
-   }
-   const sharedData = fetchSharedData(shareLink);
-   if (!sharedData) {
-        res.status(404).json({ error: 'Shared data not found' });
-   }
-   res.status(200).json({
-       message: 'Shared data retrieved successfully',
-       data: sharedData
-   });
-});
+// router.get(`${URL}/brain/:shareLink`, (req, res) => {
+//    const { shareLink } = req.params;
+//    if (!shareLink) {
+//         res.status(400).json({ error: 'Share link is required' });
+//    }
+//    const sharedData = fetchSharedData(shareLink);
+//    if (!sharedData) {
+//         res.status(404).json({ error: 'Shared data not found' });
+//    }
+//    res.status(200).json({
+//        message: 'Shared data retrieved successfully',
+//        data: sharedData
+//    });
+// });
 
 
 
