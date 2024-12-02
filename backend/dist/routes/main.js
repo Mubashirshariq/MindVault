@@ -21,6 +21,7 @@ const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const generative_ai_1 = require("@google/generative-ai");
+const vector_1 = require("../utils/vector");
 dotenv_1.default.config();
 const URL = "/api/v1";
 const JwtSecret = process.env.JWT_SECRET;
@@ -115,16 +116,19 @@ exports.router.post(`${URL}/signin`, (req, res) => __awaiter(void 0, void 0, voi
     }
 }));
 //posting content
+exports.router.post(`${URL}/postvector`, vector_1.createVector);
 exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { link, type, title, userId } = req.body;
+    const { link, type, title, userId, description } = req.body;
     try {
         const content = yield schema_1.Content.create({
             link,
             type,
             title,
+            description,
             tags: [],
             userId
         });
+        // createVector(req,res);
         res.json({
             message: "content created succesfully",
             content
@@ -138,18 +142,17 @@ exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res
 }));
 //query using ai
 exports.router.get(`${URL}/queryai`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const resp = yield AiPipeline();
-        res.json({
-            message: "queried ai model successfully",
-            resp
-        });
-    }
-    catch (error) {
-        res.status(404).json({
-            message: "error while quering ai model", error
-        });
-    }
+    // try {
+    //    const resp=await AiPipeline();
+    //    res.json({
+    //       message:"queried ai model successfully",
+    //       resp
+    //    })
+    // } catch (error) {
+    //    res.status(404).json({
+    //       message:"error while quering ai model",error
+    //    })
+    // }
 }));
 //get content
 exports.router.get(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

@@ -6,6 +6,7 @@ import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import dotenv from "dotenv"
 import {authMiddleware} from "../middlewares/authMiddleware";
 import {GoogleGenerativeAI} from "@google/generative-ai"
+import { createVector } from "../utils/vector";
 dotenv.config();
 
 
@@ -111,17 +112,22 @@ router.post(`${URL}/signin`,async (req,res)=>{
 });
 
 //posting content
+
+router.post(`${URL}/postvector`,createVector)
 router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
-    const {link,type,title,userId}=req.body;
+    const {link,type,title,userId,description}=req.body;
    
     try {
       const content=await Content.create({
          link,
          type,
          title,
+         description,
          tags:[],
          userId
       })
+      // createVector(req,res);
+
       res.json({
          message:"content created succesfully",
          content
@@ -135,17 +141,17 @@ router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
 
 //query using ai
 router.get(`${URL}/queryai`,async (req,res)=>{
-   try {
-      const resp=await AiPipeline();
-      res.json({
-         message:"queried ai model successfully",
-         resp
-      })
-   } catch (error) {
-      res.status(404).json({
-         message:"error while quering ai model",error
-      })
-   }
+   // try {
+   //    const resp=await AiPipeline();
+   //    res.json({
+   //       message:"queried ai model successfully",
+   //       resp
+   //    })
+   // } catch (error) {
+   //    res.status(404).json({
+   //       message:"error while quering ai model",error
+   //    })
+   // }
 })
 
 //get content
