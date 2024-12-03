@@ -20,6 +20,7 @@ const zod_1 = require("zod");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const authMiddleware_1 = require("../middlewares/authMiddleware");
+const generateRandomLink_1 = require("../utils/generateRandomLink");
 const generative_ai_1 = require("@google/generative-ai");
 const vector_1 = require("../utils/vector");
 dotenv_1.default.config();
@@ -116,7 +117,6 @@ exports.router.post(`${URL}/signin`, (req, res) => __awaiter(void 0, void 0, voi
     }
 }));
 //posting content
-exports.router.post(`${URL}/postvector`, vector_1.createVector);
 exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { link, type, title, userId, description } = req.body;
     try {
@@ -128,11 +128,11 @@ exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res
             tags: [],
             userId
         });
-        // createVector(req,res);
-        res.json({
-            message: "content created succesfully",
-            content
-        });
+        (0, vector_1.createVector)(req, res);
+        //    res.json({
+        //       message:"content created succesfully",
+        //       content
+        //    })
     }
     catch (error) {
         res.json({
@@ -189,28 +189,39 @@ exports.router.delete(`${URL}/content`, (req, res) => __awaiter(void 0, void 0, 
         });
     }
 }));
-// router.post(`${URL}/brain/share`, (req, res) => {
-//    const { data } = req.body;
-//    if (!data) {
-//         res.status(400).json({ error: 'Data to share is required' });
-//    }
-//    const shareLink = generateShareLink(data);
-//    res.status(201).json({
-//        message: 'Share link created successfully',
-//        shareLink
-//    });
-// });
-// router.get(`${URL}/brain/:shareLink`, (req, res) => {
-//    const { shareLink } = req.params;
-//    if (!shareLink) {
-//         res.status(400).json({ error: 'Share link is required' });
-//    }
-//    const sharedData = fetchSharedData(shareLink);
-//    if (!sharedData) {
-//         res.status(404).json({ error: 'Shared data not found' });
-//    }
-//    res.status(200).json({
-//        message: 'Shared data retrieved successfully',
-//        data: sharedData
-//    });
-// });
+exports.router.post(`${URL}/brain/share`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { share } = req.body;
+    if (!share) {
+        res.status(400).json({ error: 'Data to share is required' });
+    }
+    const hash = (0, generateRandomLink_1.generateShareLink)(10);
+    yield schema_1.Link.create({
+        hash,
+        userId: req.body.userId
+    });
+    res.status(201).json({
+        message: 'Share link created successfully',
+        hash
+    });
+}));
+exports.router.get(`${URL}/brain/:shareLink`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const hash = req.params.shareLink;
+    const link = yield schema_1.Link.findOne({
+        hash
+    });
+    if (!link) {
+        res.status(400).json({ error: 'Share link is required' });
+        return;
+    }
+    const content = yield schema_1.Content.findOne({
+        userId: link.userId
+    });
+    const user = yield schema_1.User.findOne({
+        _id: link.userId
+    });
+    res.status(200).json({
+        username: user === null || user === void 0 ? void 0 : user.username,
+        content: content,
+        message: 'Shared data retrieved successfully',
+    });
+}));

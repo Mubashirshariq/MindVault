@@ -1,10 +1,11 @@
 import express from "express"
-import { User,Content } from "../models/schema";
+import { User,Content,Link } from "../models/schema";
 import bcrypt  from "bcrypt"
 import { z } from "zod";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import dotenv from "dotenv"
 import {authMiddleware} from "../middlewares/authMiddleware";
+import { generateShareLink } from "../utils/generateRandomLink";
 import {GoogleGenerativeAI} from "@google/generative-ai"
 import { createVector } from "../utils/vector";
 dotenv.config();
@@ -112,8 +113,6 @@ router.post(`${URL}/signin`,async (req,res)=>{
 });
 
 //posting content
-
-router.post(`${URL}/postvector`,createVector)
 router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
     const {link,type,title,userId,description}=req.body;
    
@@ -126,12 +125,12 @@ router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
          tags:[],
          userId
       })
-      // createVector(req,res);
+      createVector(req,res);
 
-      res.json({
-         message:"content created succesfully",
-         content
-      })
+   //    res.json({
+   //       message:"content created succesfully",
+   //       content
+   //    })
     } catch (error) {
       res.json({
          message:"error while posting content ",error
@@ -192,32 +191,46 @@ router.delete(`${URL}/content`,async (req,res)=>{
     }
 })
 
-// router.post(`${URL}/brain/share`, (req, res) => {
-//    const { data } = req.body;
-//    if (!data) {
-//         res.status(400).json({ error: 'Data to share is required' });
-//    }
-//    const shareLink = generateShareLink(data);
-//    res.status(201).json({
-//        message: 'Share link created successfully',
-//        shareLink
-//    });
-// });
+router.post(`${URL}/brain/share`,authMiddleware, async(req, res) => {
+   const { share } = req.body;
+   if (!share) {
+        res.status(400).json({ error: 'Data to share is required' });
+   }
+   const hash = generateShareLink(10);
+   await Link.create({
+      hash,
+      userId:req.body.userId
+   })
+   res.status(201).json({
+       message: 'Share link created successfully',
+       hash
+   });
+});
 
-// router.get(`${URL}/brain/:shareLink`, (req, res) => {
-//    const { shareLink } = req.params;
-//    if (!shareLink) {
-//         res.status(400).json({ error: 'Share link is required' });
-//    }
-//    const sharedData = fetchSharedData(shareLink);
-//    if (!sharedData) {
-//         res.status(404).json({ error: 'Shared data not found' });
-//    }
-//    res.status(200).json({
-//        message: 'Shared data retrieved successfully',
-//        data: sharedData
-//    });
-// });
+router.get(`${URL}/brain/:shareLink`,async (req, res) => {
+   const hash  = req.params.shareLink;
+  
+   const link=await Link.findOne({
+      hash
+   })
+   if (!link) {
+      res.status(400).json({ error: 'Share link is required' });
+      return
+ }
+   const content=await Content.findOne({
+      userId:link.userId
+   })
+   const user=await User.findOne({
+      _id:link.userId
+   })
+ 
+   res.status(200).json({
+       username:user?.username,
+       content:content,
+       message: 'Shared data retrieved successfully',
+       
+   });
+});
 
 
 

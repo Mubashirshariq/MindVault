@@ -13,6 +13,7 @@ const contentTypes = ['image', 'video', 'article', 'audio'];
 const contentSchema = new mongoose_1.default.Schema({
     link: { type: String, required: true },
     type: { type: String, enum: contentTypes, required: true },
+    description: { type: String },
     title: { type: String, required: true },
     tags: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: 'Tag' }],
     userId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -22,7 +23,7 @@ const tagSchema = new mongoose_1.default.Schema({
 });
 const linkSchema = new mongoose_1.default.Schema({
     hash: { type: String, required: true },
-    userId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
 });
 exports.User = mongoose_1.default.model('User', userSchema);
 exports.Content = mongoose_1.default.model('Content', contentSchema);
