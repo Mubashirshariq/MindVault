@@ -28,7 +28,7 @@ export default function Card({ type, title, description,link }: CardProps) {
     }
 
     return (
-        <div className="max-w-72 mx-auto rounded-lg border border-gray-300 shadow-md overflow-hidden bg-white transition transform hover:scale-105 hover:shadow-xl">
+        <div className="max-w-72  mx-auto rounded-lg  border-gray-300 shadow-md  bg-white transition transform hover:scale-105 hover:shadow-xl">
             <div className="flex justify-between items-center bg-gray-50 p-4 border-b border-gray-200">
                 <div className="flex items-center">
                     <div className="mr-3 text-gray-600">{icons[type]}</div>
@@ -52,19 +52,18 @@ export default function Card({ type, title, description,link }: CardProps) {
 
             <div className="p-4 space-y-4">
                 {type === "youtube" && (
-                    <div className="aspect-w-16 aspect-h-9">
                         <iframe
                             className="w-full h-full rounded-md"
                             src={link}
                         ></iframe>
-                    </div>
+                 
                 )}
                 {type === "twitter" && (
-                    <div className="aspect-w-16 aspect-h-9 ">
+                   
                        <blockquote className="twitter-tweet">
                         <a href={link}></a> 
                         </blockquote>
-                    </div>
+                   
                 )}
 
                 {description && (
