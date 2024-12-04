@@ -23,10 +23,9 @@ export default function Card({ type, title, description,link }: CardProps) {
     } else if (type === "youtube") {
         const url = new URL(link);
         const videoId = url.searchParams.get("v");
-        const extraParams = url.search.substring(url.search.indexOf("&")); // Keep any additional params
+        const extraParams = url.search.substring(url.search.indexOf("&")); 
         link = `https://www.youtube.com/embed/${videoId}${extraParams ? "?" + extraParams : ""}`;
     }
-   // https://www.youtube.com/embed/AVf4a3WJXIc?si=xp1x5lC-xf3bXTNF
 
     return (
         <div className="max-w-72 mx-auto rounded-lg border border-gray-300 shadow-md overflow-hidden bg-white transition transform hover:scale-105 hover:shadow-xl">
@@ -51,7 +50,6 @@ export default function Card({ type, title, description,link }: CardProps) {
                 </div>
             </div>
 
-            {/* Content Section */}
             <div className="p-4 space-y-4">
                 {type === "youtube" && (
                     <div className="aspect-w-16 aspect-h-9">
@@ -62,7 +60,7 @@ export default function Card({ type, title, description,link }: CardProps) {
                     </div>
                 )}
                 {type === "twitter" && (
-                    <div className="aspect-w-16 aspect-h-9">
+                    <div className="aspect-w-16 aspect-h-9 ">
                        <blockquote className="twitter-tweet">
                         <a href={link}></a> 
                         </blockquote>
