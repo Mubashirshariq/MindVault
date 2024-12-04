@@ -5,14 +5,14 @@ type Inputs = {
   password: string;
 };
 
-export default function SignIn() {
+export default function SignUp() {
   const { handleSubmit, register, watch, formState: { errors } } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = data => console.log(data);
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col justify-center items-center">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full sm:w-96">
-        <h1 className="text-3xl font-bold text-center text-gray-700 mb-6">Sign In</h1>
+        <h1 className="text-3xl font-bold text-center text-gray-700 mb-6">Sign Up</h1>
         
         <form className="flex flex-col" onSubmit={handleSubmit(onSubmit)}>
           <label htmlFor="username" className="text-sm text-gray-600 mb-2">Username</label>
@@ -37,7 +37,7 @@ export default function SignIn() {
             type="submit"
             className="bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4"
           >
-            Sign In
+            Sign Up
           </button>
         </form>
       </div>
