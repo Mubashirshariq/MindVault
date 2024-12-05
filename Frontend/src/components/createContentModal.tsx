@@ -1,5 +1,6 @@
 import { useForm, SubmitHandler } from "react-hook-form";
-
+import { BACKEND_URL } from "../config";
+import axios from "axios";
 interface ModalProps {
   modal: boolean;
   onClose: () => void;
@@ -10,13 +11,30 @@ interface Inputs {
   type: "twitter" | "youtube" | "documents";
   title: string;
   description: string;
-  tags: string; 
 }
 
 export default function ContentModal({ modal, onClose }: ModalProps) {
   const { handleSubmit, register, formState: { errors } } = useForm<Inputs>();
-  const onSubmit: SubmitHandler<Inputs> = data => console.log(data);
-    console.log("on close; ",modal)
+
+  const onSubmit: SubmitHandler<Inputs> =async (data) =>{
+    try {
+      const token=localStorage.getItem("token");
+      await axios.post(`${BACKEND_URL}/content`,
+        data,
+        {
+          headers:{
+            authorization:token,
+          }
+        }
+    )
+    console.log("data",data);
+    onClose();
+    } catch (error) {
+      console.log("error",error);
+      
+    }
+  };
+  console.log("on close; ",modal)
   return (
     <div>
       {modal && (
@@ -62,14 +80,14 @@ export default function ContentModal({ modal, onClose }: ModalProps) {
               ></textarea>
               {errors.description && <span className="text-red-500 text-sm mb-2">{errors.description.message}</span>}
 
-              <label htmlFor="tags" className="text-sm text-gray-600 mb-2">Tags (comma-separated)</label>
-              <input
+              {/* <label htmlFor="tags" className="text-sm text-gray-600 mb-2">Tags (comma-separated)</label> */}
+              {/* <input
                 className="bg-gray-100 border border-gray-300 p-3 rounded-md mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 type="text"
                 id="tags"
                 {...register("tags", { required: "Tags are required" })}
               />
-              {errors.tags && <span className="text-red-500 text-sm mb-2">{errors.tags.message}</span>}
+              {errors.tags && <span className="text-red-500 text-sm mb-2">{errors.tags.message}</span>} */}
               <div className="flex justify-between items-center mt-4">
                 <button
                   type="button"

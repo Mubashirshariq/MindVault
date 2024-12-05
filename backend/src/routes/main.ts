@@ -29,7 +29,6 @@ async function AiPipeline() {
        throw new Error("AI Pipeline failed");
    }
 }
-
 export const router=express.Router();
 
 
@@ -41,7 +40,7 @@ router.post(`${URL}/signup`,async (req,res)=>{
 
    const schema=z.object({
       username:z.string().min(5,{message: "Must be 5 or more characters long"}),
-      password:z.string().min(6,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
+      password:z.string().min(4,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
 
    })
    const parsedData=schema.safeParse({username,password})
@@ -76,7 +75,7 @@ router.post(`${URL}/signin`,async (req,res)=>{
    const { username, password } = req.body;
    const schema=z.object({
       username:z.string().min(5,{message: "Must be 5 or more characters long"}),
-      password:z.string().min(6,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
+      password:z.string().min(4,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
 
    })
    const parsedData=schema.safeParse({username,password})
@@ -115,7 +114,7 @@ router.post(`${URL}/signin`,async (req,res)=>{
 //posting content
 router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
     const {link,type,title,userId,description}=req.body;
-   
+    console.log("body",req.body);
     try {
       const content=await Content.create({
          link,
@@ -127,10 +126,10 @@ router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
       })
       createVector(req,res);
 
-   //    res.json({
-   //       message:"content created succesfully",
-   //       content
-   //    })
+      // res.json({
+      //    message:"content created succesfully",
+      //    content
+      // }
     } catch (error) {
       res.json({
          message:"error while posting content ",error

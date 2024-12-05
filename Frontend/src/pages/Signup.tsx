@@ -1,13 +1,25 @@
 import { useForm, SubmitHandler } from "react-hook-form";
+import { BACKEND_URL } from "../config";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 type Inputs = {
   username: string;
   password: string;
 };
-
-export default function SignUp() {
+export default  function SignUp() {
+  const navigate=useNavigate();
   const { handleSubmit, register, watch, formState: { errors } } = useForm<Inputs>();
-  const onSubmit: SubmitHandler<Inputs> = data => console.log(data);
+  const  onSubmit: SubmitHandler<Inputs> = async (data) => {
+    console.log("data",data);
+    try {
+      await axios.post(`${BACKEND_URL}/signup`,data);
+      navigate("/signin")
+    } catch (error) {
+      console.log("error",error)
+    }
+  }
+ 
 
   return (
     <div className="w-full min-h-screen bg-gray-100 flex flex-col justify-center items-center">

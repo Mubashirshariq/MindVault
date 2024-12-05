@@ -1,11 +1,13 @@
 import express, { Request, Response } from "express";
 import { router } from "./routes/main";
 import { connectDB } from "./db";
+import Cors from "cors"
 
 
 connectDB();
 const app = express();
 app.use(express.json());
+app.use(Cors())
 
 
 

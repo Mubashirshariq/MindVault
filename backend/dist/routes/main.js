@@ -49,7 +49,7 @@ exports.router.post(`${URL}/signup`, (req, res) => __awaiter(void 0, void 0, voi
     const { username, password } = req.body;
     const schema = zod_1.z.object({
         username: zod_1.z.string().min(5, { message: "Must be 5 or more characters long" }),
-        password: zod_1.z.string().min(6, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
+        password: zod_1.z.string().min(4, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
     });
     const parsedData = schema.safeParse({ username, password });
     if (!parsedData.success) {
@@ -81,7 +81,7 @@ exports.router.post(`${URL}/signin`, (req, res) => __awaiter(void 0, void 0, voi
     const { username, password } = req.body;
     const schema = zod_1.z.object({
         username: zod_1.z.string().min(5, { message: "Must be 5 or more characters long" }),
-        password: zod_1.z.string().min(6, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
+        password: zod_1.z.string().min(4, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
     });
     const parsedData = schema.safeParse({ username, password });
     if (!parsedData.success) {
@@ -119,6 +119,7 @@ exports.router.post(`${URL}/signin`, (req, res) => __awaiter(void 0, void 0, voi
 //posting content
 exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { link, type, title, userId, description } = req.body;
+    console.log("body", req.body);
     try {
         const content = yield schema_1.Content.create({
             link,
@@ -129,10 +130,10 @@ exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res
             userId
         });
         (0, vector_1.createVector)(req, res);
-        //    res.json({
-        //       message:"content created succesfully",
-        //       content
-        //    })
+        // res.json({
+        //    message:"content created succesfully",
+        //    content
+        // }
     }
     catch (error) {
         res.json({
