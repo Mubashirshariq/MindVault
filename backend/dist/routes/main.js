@@ -173,11 +173,12 @@ exports.router.get(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res)
     }
 }));
 //delete content
-exports.router.delete(`${URL}/content`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const contentId = req.body.contentId;
+exports.router.delete(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const content_id = req.body.content_id;
+    console.log(req.body);
     try {
         yield schema_1.Content.deleteMany({
-            contentId,
+            _id: content_id,
             userId: req.body.userId
         });
         res.json({
@@ -214,7 +215,7 @@ exports.router.get(`${URL}/brain/:shareLink`, (req, res) => __awaiter(void 0, vo
         res.status(400).json({ error: 'Share link is required' });
         return;
     }
-    const content = yield schema_1.Content.findOne({
+    const content = yield schema_1.Content.find({
         userId: link.userId
     });
     const user = yield schema_1.User.findOne({

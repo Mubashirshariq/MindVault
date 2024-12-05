@@ -27,14 +27,13 @@ export default function ContentModal({ modal, onClose }: ModalProps) {
           }
         }
     )
-    console.log("data",data);
     onClose();
     } catch (error) {
       console.log("error",error);
       
     }
   };
-  console.log("on close; ",modal)
+
   return (
     <div>
       {modal && (

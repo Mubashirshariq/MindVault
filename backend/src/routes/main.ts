@@ -1,3 +1,4 @@
+
 import express from "express"
 import { User,Content,Link } from "../models/schema";
 import bcrypt  from "bcrypt"
@@ -171,12 +172,13 @@ router.get(`${URL}/content`,authMiddleware,async(req,res)=>{
 })
 
 //delete content
-router.delete(`${URL}/content`,async (req,res)=>{
-    const contentId=req.body.contentId;
-
+router.delete(`${URL}/content`,authMiddleware,async (req,res)=>{
+    const content_id=req.body.content_id;
+   
+    console.log(req.body)
     try {
       await Content.deleteMany({
-         contentId,
+         _id:content_id,
          userId: req.body.userId
      })
  
@@ -216,7 +218,7 @@ router.get(`${URL}/brain/:shareLink`,async (req, res) => {
       res.status(400).json({ error: 'Share link is required' });
       return
  }
-   const content=await Content.findOne({
+   const content=await Content.find({
       userId:link.userId
    })
    const user=await User.findOne({

@@ -21,7 +21,7 @@ export default function SideBarItem({type,title}:SideBarItemProps){
 
 
     return (
-        <div className=" flex items-center p-4 ml-4 hover:cursor-pointer hover:bg-gray-400">
+        <div className={`flex items-center p-4 ml-4 hover:cursor-pointer ${type!=='header'? 'hover:bg-gray-400':''} `}>
             <div className="mr-2">
             {icons[type]}
             </div>
