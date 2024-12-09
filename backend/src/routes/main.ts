@@ -9,6 +9,9 @@ import {authMiddleware} from "../middlewares/authMiddleware";
 import { generateShareLink } from "../utils/generateRandomLink";
 import {GoogleGenerativeAI} from "@google/generative-ai"
 import { createVector } from "../utils/vector";
+import { createEmbedding } from "../utils/createVector";
+import { Pinecone, type PineconeConfiguration } from '@pinecone-database/pinecone';
+
 dotenv.config();
 
 
@@ -16,15 +19,36 @@ const URL:string="/api/v1"
 const JwtSecret:string=process.env.JWT_SECRET as string;
 const gemini_api_key:string=process.env.GEMINI_API_KEY as string;
 
-async function AiPipeline() {
+const config: PineconeConfiguration = {
+   apiKey: process.env.PINECONE_API_KEY || '',
+ };
+ if (!config.apiKey) {
+   throw new Error('PINECONE_API_KEY is not defined in environment variables');
+ }
+ 
+const pc = new Pinecone(config);
+const pcIndex = pc.index('brainly');
+
+async function AiPipeline(input:string) {
+   const queryEmbedding= await createEmbedding(input);
+   const queryResponse = await pcIndex.namespace('ns1').query({
+      //@ts-ignore
+      vector: queryEmbedding,
+      topK: 5,
+      includeMetadata: true,
+    });
+    console.log(queryResponse);
+   const contexts = queryResponse.matches.map((match) => match?.metadata?.content);
+   const contextString = contexts.join("\n");
    const genAI = new GoogleGenerativeAI(gemini_api_key);
    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-   const prompt = "Explain how AI works";
+   const prompt = `You are an AI assistant. Based on the following context, answer the user's query:\n\nContext:\n${contextString}\n\nUser Query: ${input}`;
 
    try {
-       const result = await model.generateContent(prompt);
-       return result.response.text();
+      //@ts-ignore
+      const result = await model.generateContent(prompt);
+      return result.response.text();
    } catch (error) {
        console.error("Error in AiPipeline:", error);
        throw new Error("AI Pipeline failed");
@@ -140,17 +164,18 @@ router.post(`${URL}/content`,authMiddleware, async (req,res)=>{
 
 //query using ai
 router.get(`${URL}/queryai`,async (req,res)=>{
-   // try {
-   //    const resp=await AiPipeline();
-   //    res.json({
-   //       message:"queried ai model successfully",
-   //       resp
-   //    })
-   // } catch (error) {
-   //    res.status(404).json({
-   //       message:"error while quering ai model",error
-   //    })
-   // }
+   const {input}=req.body;
+   try {
+      const resp=await AiPipeline(input);
+      res.json({
+         message:"queried ai model successfully",
+         resp
+      })
+   } catch (error) {
+      res.status(404).json({
+         message:"error while quering ai model",error
+      })
+   }
 })
 
 //get content

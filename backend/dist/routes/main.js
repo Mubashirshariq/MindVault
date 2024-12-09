@@ -23,16 +23,37 @@ const authMiddleware_1 = require("../middlewares/authMiddleware");
 const generateRandomLink_1 = require("../utils/generateRandomLink");
 const generative_ai_1 = require("@google/generative-ai");
 const vector_1 = require("../utils/vector");
+const createVector_1 = require("../utils/createVector");
+const pinecone_1 = require("@pinecone-database/pinecone");
 dotenv_1.default.config();
 const URL = "/api/v1";
 const JwtSecret = process.env.JWT_SECRET;
 const gemini_api_key = process.env.GEMINI_API_KEY;
-function AiPipeline() {
+const config = {
+    apiKey: process.env.PINECONE_API_KEY || '',
+};
+if (!config.apiKey) {
+    throw new Error('PINECONE_API_KEY is not defined in environment variables');
+}
+const pc = new pinecone_1.Pinecone(config);
+const pcIndex = pc.index('brainly');
+function AiPipeline(input) {
     return __awaiter(this, void 0, void 0, function* () {
+        const queryEmbedding = yield (0, createVector_1.createEmbedding)(input);
+        const queryResponse = yield pcIndex.namespace('ns1').query({
+            //@ts-ignore
+            vector: queryEmbedding,
+            topK: 5,
+            includeMetadata: true,
+        });
+        console.log(queryResponse);
+        const contexts = queryResponse.matches.map((match) => { var _a; return (_a = match === null || match === void 0 ? void 0 : match.metadata) === null || _a === void 0 ? void 0 : _a.content; });
+        const contextString = contexts.join("\n");
         const genAI = new generative_ai_1.GoogleGenerativeAI(gemini_api_key);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = "Explain how AI works";
+        const prompt = `You are an AI assistant. Based on the following context, answer the user's query:\n\nContext:\n${contextString}\n\nUser Query: ${input}`;
         try {
+            //@ts-ignore
             const result = yield model.generateContent(prompt);
             return result.response.text();
         }
@@ -143,17 +164,19 @@ exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res
 }));
 //query using ai
 exports.router.get(`${URL}/queryai`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    // try {
-    //    const resp=await AiPipeline();
-    //    res.json({
-    //       message:"queried ai model successfully",
-    //       resp
-    //    })
-    // } catch (error) {
-    //    res.status(404).json({
-    //       message:"error while quering ai model",error
-    //    })
-    // }
+    const { input } = req.body;
+    try {
+        const resp = yield AiPipeline(input);
+        res.json({
+            message: "queried ai model successfully",
+            resp
+        });
+    }
+    catch (error) {
+        res.status(404).json({
+            message: "error while quering ai model", error
+        });
+    }
 }));
 //get content
 exports.router.get(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {

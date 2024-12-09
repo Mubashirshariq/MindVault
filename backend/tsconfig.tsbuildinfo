@@ -1,1 +1,1 @@
-{"root":["./global.d.ts","./src/db.ts","./src/index.ts","./src/middlewares/authmiddleware.ts","./src/models/schema.ts","./src/routes/main.ts","./src/utils/generaterandomlink.ts","./src/utils/vector.ts"],"version":"5.6.3"}
+{"root":["./global.d.ts","./src/db.ts","./src/index.ts","./src/middlewares/authmiddleware.ts","./src/models/schema.ts","./src/routes/main.ts","./src/utils/createvector.ts","./src/utils/generaterandomlink.ts","./src/utils/vector.ts"],"version":"5.6.3"}
