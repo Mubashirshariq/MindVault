@@ -44,14 +44,31 @@ function AiPipeline(input) {
             //@ts-ignore
             vector: queryEmbedding,
             topK: 5,
+            includeValues: true,
             includeMetadata: true,
         });
-        console.log(queryResponse);
-        const contexts = queryResponse.matches.map((match) => { var _a; return (_a = match === null || match === void 0 ? void 0 : match.metadata) === null || _a === void 0 ? void 0 : _a.content; });
+        const contexts = queryResponse.matches.map((match) => { var _a; return (_a = match === null || match === void 0 ? void 0 : match.metadata) === null || _a === void 0 ? void 0 : _a.description; });
+        console.log("contexts: ", contexts);
         const contextString = contexts.join("\n");
         const genAI = new generative_ai_1.GoogleGenerativeAI(gemini_api_key);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `You are an AI assistant. Based on the following context, answer the user's query:\n\nContext:\n${contextString}\n\nUser Query: ${input}`;
+        const prompt = `
+      You are an advanced AI assistant designed to act as a second brain for the user, capable of processing and synthesizing complex information from various saved resources like YouTube links, Twitter posts, articles, and other references. Your task is to analyze the provided context and give precise, insightful, and actionable responses to the user's query.
+
+      Context:
+      ${contextString}
+
+      User Query:
+      ${input}
+
+      Instructions:
+      - Understand the context deeply and draw connections across different data points.
+      - Provide clear and concise answers that directly address the user's query.
+      - Where relevant, include references to specific sources or key details from the context.
+      - If the query requires synthesis or analysis, provide a thoughtful, well-reasoned response.
+
+      Answer:
+      `;
         try {
             //@ts-ignore
             const result = yield model.generateContent(prompt);
@@ -140,7 +157,6 @@ exports.router.post(`${URL}/signin`, (req, res) => __awaiter(void 0, void 0, voi
 //posting content
 exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { link, type, title, userId, description } = req.body;
-    console.log("body", req.body);
     try {
         const content = yield schema_1.Content.create({
             link,
@@ -151,10 +167,6 @@ exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res
             userId
         });
         (0, vector_1.createVector)(req, res);
-        // res.json({
-        //    message:"content created succesfully",
-        //    content
-        // }
     }
     catch (error) {
         res.json({
@@ -163,13 +175,13 @@ exports.router.post(`${URL}/content`, authMiddleware_1.authMiddleware, (req, res
     }
 }));
 //query using ai
-exports.router.get(`${URL}/queryai`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { input } = req.body;
+exports.router.post(`${URL}/queryai`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { inputMessage } = req.body;
     try {
-        const resp = yield AiPipeline(input);
+        const data = yield AiPipeline(inputMessage);
         res.json({
             message: "queried ai model successfully",
-            resp
+            data
         });
     }
     catch (error) {

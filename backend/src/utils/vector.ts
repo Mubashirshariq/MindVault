@@ -46,7 +46,6 @@ export const createVector = async (req: Request, res: Response): Promise<void> =
       throw new Error('Vector extraction failed: Invalid response from Hugging Face');
     }
 
-    console.log('Vector created:', vector);
 
     const PineconeRecord = {
       id: uuidv4(),

@@ -83,7 +83,7 @@ export default function Card({ type, title, description,link,content_id }: CardP
                 )}
 
                 {description && (
-                    <p className="text-gray-700 text-sm leading-relaxed">
+                    <p className="text-gray-700 text-sm ">
                         {description}
                     </p>
                 )}

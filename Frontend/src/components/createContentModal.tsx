@@ -19,6 +19,7 @@ export default function ContentModal({ modal, onClose }: ModalProps) {
   const onSubmit: SubmitHandler<Inputs> =async (data) =>{
     try {
       const token=localStorage.getItem("token");
+      onClose();
       await axios.post(`${BACKEND_URL}/content`,
         data,
         {
@@ -27,7 +28,6 @@ export default function ContentModal({ modal, onClose }: ModalProps) {
           }
         }
     )
-    onClose();
     } catch (error) {
       console.log("error",error);
       

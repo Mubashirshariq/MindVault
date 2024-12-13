@@ -1,16 +1,18 @@
 import SideBarItem from "./SidebarItem";
 
-export default function SideBar(){
-    return(
+interface SideBarProps {
+  onSelectFilter: (filter: string) => void;
+}
 
-        <div className="w-72 min-h-screen pt-6 fixed top-0 left-0 border shadow-md">
-            <SideBarItem title="MindVault" type="header"/>
-            <SideBarItem title="Tweets" type="twitter"/>
-            <SideBarItem title="Videos" type="youtube"/>
-            <SideBarItem title="Documents" type="documents"/>
-            <SideBarItem title="Links" type="links"/>
-            <SideBarItem title="Tags" type="tags"/>
-        </div>
-        
-    )
+export default function SideBar({ onSelectFilter }: SideBarProps) {
+  return (
+    <div className="sm:w-72 w-52 min-h-screen pt-6 fixed top-0 left-0 border bg-gray-200">
+      <SideBarItem title="MindVault" type="header" onClick={() => {}} />
+      <SideBarItem onClick={() => onSelectFilter("twitter")} title="Tweets" type="twitter" />
+      <SideBarItem onClick={() => onSelectFilter("youtube")} title="Videos" type="youtube" />
+      <SideBarItem onClick={() => onSelectFilter("documents")} title="Documents" type="documents" />
+      <SideBarItem onClick={() => onSelectFilter("links")} title="Links" type="links" />
+      <SideBarItem onClick={() => onSelectFilter("tags")} title="Tags" type="tags" />
+    </div>
+  );
 }

@@ -16,20 +16,17 @@ const icons = {
 interface SideBarItemProps{
     type:"twitter"|"youtube"|"documents"|"links"|"tags"|"header",
     title:string,
+    onClick:()=>void;
 }
-export default function SideBarItem({type,title}:SideBarItemProps){
-
-
+export default function SideBarItem({type,title,onClick}:SideBarItemProps){
     return (
-        <div className={`flex items-center p-4 ml-4 hover:cursor-pointer ${type!=='header'? 'hover:bg-gray-400':''} `}>
+        <div onClick={onClick} className={`flex items-center p-4 ml-4 hover:cursor-pointer ${type!=='header'? 'hover:bg-gray-400':''} `}>
             <div className="mr-2">
             {icons[type]}
             </div>
             <div className={`${type === 'header' ? 'font-extrabold font-sans text-blue-600 text-2xl' : ''}`}>
             {title}
-            </div>
-
-            
+            </div>  
         </div> 
     )
 }

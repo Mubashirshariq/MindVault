@@ -1,39 +1,60 @@
 import { useState } from "react";
 import chat from '../assets/chat.svg';
+import { BACKEND_URL } from "../config";
+import axios from "axios";
+
 function ChatWindow() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<{ sender: string; text: string }[]>([]);
   const [input, setInput] = useState("");
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (input.trim() === "") return;
+
+    const userMessage = input;
+    setInput("");
 
     setMessages((prevMessages) => [
       ...prevMessages,
-      { sender: "You", text: input },
+      { sender: "You", text: userMessage },
     ]);
-    setInput("");
 
-    setTimeout(() => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { sender: "Bot", text: "This is a placeholder response!" },
-      ]);
-    }, 1000);
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { sender: "Gemini", text: "Gemini is typing..." },
+    ]);
+
+    try {
+      const response = await axios.post(`${BACKEND_URL}/queryai`, {
+        inputMessage: userMessage,
+      });
+      const geminiResponse = response.data.data;
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message.text === "Gemini is typing..."
+            ? { sender: "Gemini", text: geminiResponse }
+            : message
+        )
+      );
+    } catch (error) {
+      setMessages((prevMessages) =>
+        prevMessages.map((message) =>
+          message.text === "Gemini is typing..."
+            ? { sender: "Gemini", text: "Oops! Something went wrong." }
+            : message
+        )
+      );
+    }
   };
 
   return (
     <div>
       <button
-            className="w-16 h-16 bg-orange-200 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-400 focus:outline-none"
-            onClick={() => setIsOpen(true)}
-          >
-            <img
-              src={chat}
-              alt="Chat Icon"
-              className="w-6 h-6"
-            />
-          </button>
+        className="w-16 h-16 bg-cyan-600 rounded-full shadow-lg flex items-center justify-center hover:bg-orange-400 focus:outline-none"
+        onClick={() => setIsOpen(true)}
+      >
+        <img src={chat} alt="Chat Icon" className="w-6 h-6" />
+      </button>
       {isOpen && (
         <div className="fixed bottom-20 right-6 w-80 h-96 bg-white shadow-lg rounded-lg flex flex-col">
           <div className="bg-blue-500 text-white py-2 px-4 rounded-t-lg flex justify-between items-center">

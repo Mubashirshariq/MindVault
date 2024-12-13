@@ -7,11 +7,15 @@ import { useEffect, useState } from "react";
 import ContentModal from "../components/createContentModal";
 import { BACKEND_URL } from "../config";
 import ChatWindow from "../components/chatWindow";
+import { MenuIcon, XIcon } from "../icons/hamburger";
 import axios from "axios";
 
 function Dashboard() {
   const [modal, setModal] = useState(false);
   const [data, setData] = useState<any[]>([]);
+  const [SideBarVisibility, setSideBarVisibility] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState<string>("");
+
 
   useEffect(() => {
     axios
@@ -54,17 +58,26 @@ function Dashboard() {
       alert("Failed to share the brain. Please try again.");
     }
   };
+  const filterData=selectedFilter?data.filter((d)=>{
+   return d.type==selectedFilter
+  }):data;
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800">
       <ContentModal modal={modal} onClose={() => setModal(false)} />
       <div className="flex h-full">
-        <div className={``}>
-          <SideBar />
+        <div className={`${SideBarVisibility ? 'block z-50' : 'hidden'} sm:block `}>
+          <SideBar onSelectFilter={setSelectedFilter} />
         </div>
-        <div className="flex-1 pl-80 flex flex-col p-6">
-          <div className="fixed w-3/4 z-10 flex justify-between items-center bg-white mb-6 p-4 rounded-lg">
-            <h1 className="text-lg font-bold p-6">All Notes</h1>
+        <div className="flex-1 sm:pl-80 pl-0 flex flex-col p-6">
+          <div className="fixed sm:w-3/4 w-full z-50 flex justify-between items-center bg-white mb-6 p-4 rounded-lg">
+            <h1 className="text-lg font-bold p-6 sm:block hidden">All Notes</h1>
+            <button
+              onClick={() => setSideBarVisibility(!SideBarVisibility)}
+              className="sm:hidden ml-3 border border-gray-500 box-border"
+            >
+              {SideBarVisibility ? <XIcon /> : <MenuIcon />}
+            </button>
             <div className="flex space-x-3">
               <Button
                 onClick={handleBrainShare}
@@ -81,7 +94,7 @@ function Dashboard() {
             </div>
           </div>
           <div className="pt-32 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {data.map((value) => (
+            {filterData.map((value) => (
               <Card
                 key={value._id}
                 title={value.title}
@@ -94,7 +107,6 @@ function Dashboard() {
           </div>
         </div>
 
-      
         <div className="fixed bottom-6 right-6">
           <ChatWindow />
         </div>
@@ -104,4 +116,3 @@ function Dashboard() {
 }
 
 export default Dashboard;
-
