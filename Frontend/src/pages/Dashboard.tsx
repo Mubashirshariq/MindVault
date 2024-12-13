@@ -70,7 +70,7 @@ function Dashboard() {
           <SideBar onSelectFilter={setSelectedFilter} />
         </div>
         <div className="flex-1 sm:pl-80 pl-0 flex flex-col p-6">
-          <div className="fixed sm:w-3/4 w-full z-50 flex justify-between items-center bg-white mb-6 p-4 rounded-lg">
+          <div className="fixed sm:w-3/4 w-full sm:z-20 z-50 flex justify-between items-center bg-white mb-6 p-4 rounded-lg">
             <h1 className="text-lg font-bold p-6 sm:block hidden">All Notes</h1>
             <button
               onClick={() => setSideBarVisibility(!SideBarVisibility)}

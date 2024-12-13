@@ -9,7 +9,7 @@ const userSchema = new mongoose_1.default.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true }
 });
-const contentTypes = ['youtube', 'twitter', 'documents'];
+const contentTypes = ['youtube', 'twitter', 'documents', 'links'];
 const contentSchema = new mongoose_1.default.Schema({
     link: { type: String, required: true },
     type: { type: String, enum: contentTypes, required: true },

@@ -3,11 +3,12 @@ import ShareIcon from "../icons/shareIcon";
 import TrashIcon from "../icons/trashIcon";
 import TwitterIcon from "../icons/twitterIcon";
 import YoutubeIcon from "../icons/youtubeIcon";
+import LinkIcon from "../icons/linkIcon";
 import { BACKEND_URL } from "../config";
 import axios from "axios";
 
 interface CardProps {
-    type: "twitter" | "youtube" | "note";
+    type: "twitter" | "youtube" | "documents" |"links";
     title: string;
     description?: string;
     link:string;
@@ -17,7 +18,8 @@ interface CardProps {
 const icons = {
     youtube: <YoutubeIcon />,
     twitter: <TwitterIcon />,
-    note: <NotesIcon />,
+    documents: <NotesIcon />,
+    links:<LinkIcon/>,
 };
 
 export default function Card({ type, title, description,link,content_id }: CardProps) {
@@ -81,7 +83,36 @@ export default function Card({ type, title, description,link,content_id }: CardP
                         </blockquote>
                    
                 )}
+                   {type === "links" && (
+                    <div className="flex items-center space-x-2">
+                        <a
+                            href={link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline"
+                        >
+                            {link}
+                        </a>
+                        <button
+                            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+                            title="Open Link"
+                        >
+                        </button>
+                    </div>
+                )}
 
+                {type === "documents" && (
+                    <div className="flex items-center space-x-2">
+                        <button
+                            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200"
+                            title="Download Document"
+                            onClick={() => window.open(link, "_blank")}
+                        >
+                            <NotesIcon />
+                        </button>
+                        <span className="text-gray-600 text-sm">Document</span>
+                    </div>
+                )}
                 {description && (
                     <p className="text-gray-700 text-sm ">
                         {description}

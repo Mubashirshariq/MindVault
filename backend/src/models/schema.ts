@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
   password: {type:String,required:true}
 });
 
-const contentTypes = ['youtube', 'twitter', 'documents'];
+const contentTypes = ['youtube', 'twitter', 'documents','links'];
 
 const contentSchema = new mongoose.Schema({
   link: { type: String, required: true },

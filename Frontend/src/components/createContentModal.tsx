@@ -8,7 +8,7 @@ interface ModalProps {
 
 interface Inputs {
   link: string;
-  type: "twitter" | "youtube" | "documents";
+  type: "twitter" | "youtube" | "documents"|"links";
   title: string;
   description: string;
 }
@@ -60,6 +60,8 @@ export default function ContentModal({ modal, onClose }: ModalProps) {
                 <option value="twitter">Twitter</option>
                 <option value="youtube">YouTube</option>
                 <option value="documents">Documents</option>
+                <option value="links">Links</option>
+                <option value="documents">Tags</option>
               </select>
               {errors.type && <span className="text-red-500 text-sm mb-2">{errors.type.message}</span>}
               <label htmlFor="title" className="text-sm text-gray-600 mb-2">Title</label>
