@@ -10,7 +10,7 @@ type Inputs = {
 
 export default function SignIn() {
   const navigate=useNavigate();
-  const { handleSubmit, register, watch, formState: { errors } } = useForm<Inputs>();
+  const { handleSubmit, register, formState: { errors } } = useForm<Inputs>();
   const onSubmit: SubmitHandler<Inputs> = async(data) =>{
     try {
       const response=   await  axios.post(`${BACKEND_URL}/signin`,data);

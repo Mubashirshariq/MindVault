@@ -26,7 +26,7 @@ export default function SharedBrain() {
         <div className="min-h-screen bg-gray-100 text-gray-800">
             <div className="flex h-full">
                 <div className="">
-                    <SideBar />
+                    <SideBar onSelectFilter={()=>{}}/>
                 </div>
 
                 <div className="flex-1 pl-80 flex flex-col p-6">

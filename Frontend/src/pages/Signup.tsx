@@ -9,7 +9,7 @@ type Inputs = {
 };
 export default  function SignUp() {
   const navigate=useNavigate();
-  const { handleSubmit, register, watch, formState: { errors } } = useForm<Inputs>();
+  const { handleSubmit, register, formState: { errors } } = useForm<Inputs>();
   const  onSubmit: SubmitHandler<Inputs> = async (data) => {
     console.log("data",data);
     try {
