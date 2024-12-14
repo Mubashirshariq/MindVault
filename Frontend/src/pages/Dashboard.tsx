@@ -15,20 +15,30 @@ function Dashboard() {
   const [data, setData] = useState<any[]>([]);
   const [SideBarVisibility, setSideBarVisibility] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<string>("");
-
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setIsAuthenticated(false);
+      return;
+    }
+
     axios
       .get(`${BACKEND_URL}/content`, {
         headers: {
-          authorization: localStorage.getItem("token"),
+          authorization: token,
         },
       })
       .then((response) => {
         setData(response.data.content);
       })
       .catch((error) => {
-        console.log("Error while fetching data:", error);
+        console.error("Error while fetching data:", error);
+        if (error.response?.status === 401) {
+          setIsAuthenticated(false);
+        }
       });
   }, []);
 
@@ -58,15 +68,29 @@ function Dashboard() {
       alert("Failed to share the brain. Please try again.");
     }
   };
-  const filterData=selectedFilter?data.filter((d)=>{
-   return d.type==selectedFilter
-  }):data;
+
+  const filterData = selectedFilter
+    ? data.filter((d) => d.type === selectedFilter)
+    : data;
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 text-gray-800">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">You need to sign up</h1>
+          <p className="mb-4">
+            Please <a href="/signup" className="text-blue-600 underline">sign up</a>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800">
       <ContentModal modal={modal} onClose={() => setModal(false)} />
       <div className="flex h-full">
-        <div className={`${SideBarVisibility ? 'block z-50' : 'hidden'} sm:block `}>
+        <div className={`${SideBarVisibility ? "block z-50" : "hidden"} sm:block`}>
           <SideBar onSelectFilter={setSelectedFilter} />
         </div>
         <div className="flex-1 sm:pl-80 pl-0 flex flex-col p-6">
@@ -106,7 +130,6 @@ function Dashboard() {
             ))}
           </div>
         </div>
-
         <div className="fixed bottom-6 right-6">
           <ChatWindow />
         </div>
