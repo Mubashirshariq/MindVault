@@ -44,28 +44,4 @@ Make sure you have the following installed before starting:
 - [Hugging Face](https://huggingface.co/) account and API key  
 - [MongoDB](https://www.mongodb.com/) instance or cluster
 
-### Steps  
-
-1. Clone the repository:  
-   ```bash  
-    git clone https://github.com/username/mindvault.git
-   ```
-2. Navigate to the project folder:
-  ```bash
-    cd mindvault
-  ``` 
-3. Install dependencies:
-bash
-```
-npm install  
-
-```
-4. Start the development server:
-bash
-```
-
-npm start  
-
-```
-Open your browser and navigate to http://localhost:3000.
 
