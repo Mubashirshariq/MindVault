@@ -10,6 +10,7 @@ import ChatWindow from "../components/chatWindow";
 import { MenuIcon, XIcon } from "../icons/hamburger";
 import axios from "axios";
 
+
 function Dashboard() {
   const [modal, setModal] = useState(false);
   const [data, setData] = useState<any[]>([]);
@@ -17,29 +18,32 @@ function Dashboard() {
   const [selectedFilter, setSelectedFilter] = useState<string>("");
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
 
-  useEffect(() => {
+  const fetchData = async () => {
     const token = localStorage.getItem("token");
-
+  
     if (!token) {
       setIsAuthenticated(false);
       return;
     }
-
-    axios
-      .get(`${BACKEND_URL}/content`, {
+  
+    try {
+      const response = await axios.get(`${BACKEND_URL}/content`, {
         headers: {
           authorization: token,
         },
-      })
-      .then((response) => {
-        setData(response.data.content);
-      })
-      .catch((error) => {
-        console.error("Error while fetching data:", error);
-        if (error.response?.status === 401) {
-          setIsAuthenticated(false);
-        }
       });
+      setData(response.data.content);
+    } catch (error) {
+      console.error("Error while fetching data:", error);
+      if ((error as any).response?.status === 401) {
+        setIsAuthenticated(false);
+      }
+    }
+  };
+  
+
+  useEffect(() => {
+    fetchData();
   }, []);
 
   const handleBrainShare = async () => {
@@ -88,7 +92,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800">
-      <ContentModal modal={modal} onClose={() => setModal(false)} />
+      <ContentModal modal={modal} onClose={() => setModal(false)} refreshData={fetchData} />
       <div className="flex h-full">
         <div className={`${SideBarVisibility ? "block z-50" : "hidden"} sm:block`}>
           <SideBar onSelectFilter={setSelectedFilter} />
@@ -126,6 +130,7 @@ function Dashboard() {
                 type={value.type}
                 link={value.link}
                 content_id={value._id}
+                refreshData={fetchData}
               />
             ))}
           </div>

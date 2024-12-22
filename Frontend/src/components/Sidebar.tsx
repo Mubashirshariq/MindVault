@@ -12,7 +12,6 @@ export default function SideBar({ onSelectFilter }: SideBarProps) {
       <SideBarItem onClick={() => onSelectFilter("youtube")} title="Videos" type="youtube" />
       <SideBarItem onClick={() => onSelectFilter("documents")} title="Documents" type="documents" />
       <SideBarItem onClick={() => onSelectFilter("links")} title="Links" type="links" />
-      <SideBarItem onClick={() => onSelectFilter("tags")} title="Tags" type="tags" />
     </div>
   );
 }

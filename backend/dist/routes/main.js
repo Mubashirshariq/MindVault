@@ -40,7 +40,7 @@ const pcIndex = pc.index('brainly');
 function AiPipeline(input) {
     return __awaiter(this, void 0, void 0, function* () {
         const queryEmbedding = yield (0, createVector_1.createEmbedding)(input);
-        const queryResponse = yield pcIndex.namespace('ns1').query({
+        const queryResponse = yield pcIndex.namespace("ns1").query({
             //@ts-ignore
             vector: queryEmbedding,
             topK: 5,
@@ -50,25 +50,36 @@ function AiPipeline(input) {
         const contexts = queryResponse.matches.map((match) => { var _a; return (_a = match === null || match === void 0 ? void 0 : match.metadata) === null || _a === void 0 ? void 0 : _a.description; });
         console.log("contexts: ", contexts);
         const contextString = contexts.join("\n");
+        const genericQueries = [
+            "hi",
+            "hello",
+            "who is the pm of india",
+        ];
+        if (genericQueries.includes(input.toLowerCase())) {
+            return handleGenericQuery(input);
+        }
+        if (!contextString || contexts.length === 0) {
+            return "I'm sorry, I couldn't find relevant information for your query. Could you please clarify or provide more details?";
+        }
         const genAI = new generative_ai_1.GoogleGenerativeAI(gemini_api_key);
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
-      You are an advanced AI assistant designed to act as a second brain for the user, capable of processing and synthesizing complex information from various saved resources like YouTube links, Twitter posts, articles, and other references. Your task is to analyze the provided context and give precise, insightful, and actionable responses to the user's query.
-
-      Context:
-      ${contextString}
-
-      User Query:
-      ${input}
-
-      Instructions:
-      - Understand the context deeply and draw connections across different data points.
-      - Provide clear and concise answers that directly address the user's query.
-      - Where relevant, include references to specific sources or key details from the context.
-      - If the query requires synthesis or analysis, provide a thoughtful, well-reasoned response.
-
-      Answer:
-      `;
+     You are an advanced AI assistant designed to act as a second brain for the user, capable of processing and synthesizing complex information from various saved resources like YouTube links, Twitter posts, articles, and other references. Your task is to analyze the provided context and give precise, insightful, and actionable responses to the user's query.
+ 
+     Context:
+     ${contextString}
+ 
+     User Query:
+     ${input}
+ 
+     Instructions:
+     - If the user asks a generic or irrelevant question (e.g., "Hi", "Who is the PM of India"), respond with a simple, appropriate answer without trying to analyze the context.
+     - Otherwise, deeply understand the context, draw connections across different data points, and provide clear, concise answers.
+     - Where relevant, include references to specific sources or key details from the context.
+     - If the query requires synthesis or analysis, provide a thoughtful, well-reasoned response.
+ 
+     Answer:
+   `;
         try {
             //@ts-ignore
             const result = yield model.generateContent(prompt);
@@ -80,23 +91,35 @@ function AiPipeline(input) {
         }
     });
 }
+function handleGenericQuery(input) {
+    const genericResponses = {
+        hi: "Hello! How can I assist you today?",
+        hello: "Hi there! What can I help you with?",
+    };
+    const lowerCaseInput = input.toLowerCase();
+    if (genericResponses[lowerCaseInput]) {
+        return genericResponses[lowerCaseInput];
+    }
+    return "I'm here to assist you! Please provide more details or ask a specific question.";
+}
 exports.router = express_1.default.Router();
 // router.use(express.json());
 //signup route
 exports.router.post(`${URL}/signup`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
-    const schema = zod_1.z.object({
-        username: zod_1.z.string().min(5, { message: "Must be 5 or more characters long" }),
-        password: zod_1.z.string().min(4, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
-    });
-    const parsedData = schema.safeParse({ username, password });
-    if (!parsedData.success) {
-        res.status(401).json({
-            message: "Invalid data",
-            errors: parsedData.error.errors
-        });
-    }
     try {
+        const schema = zod_1.z.object({
+            username: zod_1.z.string().min(5, { message: "Must be 5 or more characters long" }),
+            password: zod_1.z.string().min(4, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
+        });
+        const parsedData = schema.safeParse({ username, password });
+        if (!parsedData.success) {
+            res.status(401).json({
+                message: "Invalid data",
+                errors: parsedData.error.errors
+            });
+            return;
+        }
         const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         yield schema_1.User.create({
             username,
@@ -117,29 +140,32 @@ exports.router.post(`${URL}/signup`, (req, res) => __awaiter(void 0, void 0, voi
 //signin route
 exports.router.post(`${URL}/signin`, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
-    const schema = zod_1.z.object({
-        username: zod_1.z.string().min(5, { message: "Must be 5 or more characters long" }),
-        password: zod_1.z.string().min(4, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
-    });
-    const parsedData = schema.safeParse({ username, password });
-    if (!parsedData.success) {
-        res.status(401).json({
-            message: "Invalid data",
-            errors: parsedData.error.errors
-        });
-    }
     try {
+        const schema = zod_1.z.object({
+            username: zod_1.z.string().min(5, { message: "Must be 5 or more characters long" }),
+            password: zod_1.z.string().min(4, { message: "Must be 6 or more characters long" }).max(20, { message: "Must be 20 or fewer characters long" })
+        });
+        const parsedData = schema.safeParse({ username, password });
+        if (!parsedData.success) {
+            res.status(401).json({
+                message: "Invalid data",
+                errors: parsedData.error.errors
+            });
+            return;
+        }
         const user = yield schema_1.User.findOne({ username });
         if (!user) {
             res.status(403).json({
                 message: 'Login unsuccessful. User not found.',
             });
+            return;
         }
         const isPasswordValid = yield bcrypt_1.default.compare(password, (user === null || user === void 0 ? void 0 : user.password) || '');
         if (!isPasswordValid) {
             res.status(403).json({
                 message: 'Login unsuccessful. Incorrect password.',
             });
+            return;
         }
         const token = jsonwebtoken_1.default.sign({ id: (user === null || user === void 0 ? void 0 : user._id) || '' }, JwtSecret);
         res.json({
@@ -216,6 +242,8 @@ exports.router.delete(`${URL}/content`, authMiddleware_1.authMiddleware, (req, r
             _id: content_id,
             userId: req.body.userId
         });
+        const ns = pcIndex.namespace('ns1');
+        yield ns.deleteOne("38254fe7-5892-41e5-97e9-73d9d1728d93");
         res.json({
             message: "deleted content"
         });

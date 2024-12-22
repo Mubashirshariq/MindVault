@@ -1,9 +1,12 @@
 import { useForm, SubmitHandler } from "react-hook-form";
 import { BACKEND_URL } from "../config";
 import axios from "axios";
+import toast from "react-hot-toast";
+
 interface ModalProps {
   modal: boolean;
   onClose: () => void;
+  refreshData: () => void;
 }
 
 interface Inputs {
@@ -13,13 +16,16 @@ interface Inputs {
   description: string;
 }
 
-export default function ContentModal({ modal, onClose }: ModalProps) {
-  const { handleSubmit, register, formState: { errors } } = useForm<Inputs>();
+export default function ContentModal({ modal, onClose,refreshData  }: ModalProps) {
+  const { handleSubmit, register,reset, formState: { errors } } = useForm<Inputs>();
 
   const onSubmit: SubmitHandler<Inputs> =async (data) =>{
+    const loadingToast = toast.loading("Upserting data...", {
+      position: "top-center",
+    });
     try {
       const token=localStorage.getItem("token");
-      onClose();
+    
       await axios.post(`${BACKEND_URL}/content`,
         data,
         {
@@ -28,6 +34,12 @@ export default function ContentModal({ modal, onClose }: ModalProps) {
           }
         }
     )
+    refreshData();
+    toast.success("Data upserted successfully", {
+      id: loadingToast,
+    });
+    reset();
+    onClose();
     } catch (error) {
       console.log("error",error);
       
@@ -61,7 +73,6 @@ export default function ContentModal({ modal, onClose }: ModalProps) {
                 <option value="youtube">YouTube</option>
                 <option value="documents">Documents</option>
                 <option value="links">Links</option>
-                <option value="documents">Tags</option>
               </select>
               {errors.type && <span className="text-red-500 text-sm mb-2">{errors.type.message}</span>}
               <label htmlFor="title" className="text-sm text-gray-600 mb-2">Title</label>

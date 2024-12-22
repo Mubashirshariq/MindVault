@@ -6,6 +6,7 @@ import YoutubeIcon from "../icons/youtubeIcon";
 import LinkIcon from "../icons/linkIcon";
 import { BACKEND_URL } from "../config";
 import axios from "axios";
+import toast from "react-hot-toast";
 
 interface CardProps {
     type: "twitter" | "youtube" | "documents" |"links";
@@ -13,6 +14,7 @@ interface CardProps {
     description?: string;
     link:string;
     content_id:string;
+    refreshData:()=>void;
 }
 
 const icons = {
@@ -22,7 +24,7 @@ const icons = {
     links:<LinkIcon/>,
 };
 
-export default function Card({ type, title, description,link,content_id }: CardProps) {
+export default function Card({ type, title, description,link,content_id,refreshData}: CardProps) {
     if (type === "twitter") {
         link = link.replace("x.com", "twitter.com");
     } else if (type === "youtube") {
@@ -33,6 +35,9 @@ export default function Card({ type, title, description,link,content_id }: CardP
     }
 
     const handleContentDelete = async () => {
+        const loadingToast = toast.loading("Deleting data...", {
+            position: "top-center",
+          });
         try {
             await axios.delete(`${BACKEND_URL}/content`, { 
                 data: { content_id },
@@ -40,7 +45,12 @@ export default function Card({ type, title, description,link,content_id }: CardP
                     authorization:localStorage.getItem("token")
                 }
              });
+            refreshData();
+             toast.success("Data deleted successfully", {
+                id: loadingToast,
+              });
         } catch (error) {
+            toast.error("Error while deleting data");
             console.log("error", error);
         }
     }
@@ -52,12 +62,6 @@ export default function Card({ type, title, description,link,content_id }: CardP
                     <h2 className="text-lg font-medium text-gray-800">{title}</h2>
                 </div>
                 <div className="flex items-center">
-                    <button
-                        className="p-2 rounded-full hover:bg-gray-200 transition"
-                        title="Share"
-                    >
-                        <ShareIcon />
-                    </button>
                     <button
                         className="p-2 rounded-full hover:bg-red-200 cursor-pointer transition"
                         title="Delete"

@@ -29,48 +29,79 @@ const config: PineconeConfiguration = {
 const pc = new Pinecone(config);
 const pcIndex = pc.index('brainly');
 
-async function AiPipeline(input:string) {
-   const queryEmbedding= await createEmbedding(input);
-   const queryResponse = await pcIndex.namespace('ns1').query({
-      //@ts-ignore
-      vector: queryEmbedding,
-      topK: 5,
-      includeValues: true,
-      includeMetadata: true,
-    });
-      const contexts = queryResponse.matches.map((match) => match?.metadata?.description);
-      console.log("contexts: ",contexts)
-      const contextString = contexts.join("\n");
-      const genAI = new GoogleGenerativeAI(gemini_api_key);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+async function AiPipeline(input: string) {
+   const queryEmbedding = await createEmbedding(input);
+   const queryResponse = await pcIndex.namespace("ns1").query({
+     //@ts-ignore
+     vector: queryEmbedding,
+     topK: 5,
+     includeValues: true,
+     includeMetadata: true,
+   });
+ 
+   const contexts = queryResponse.matches.map((match) => match?.metadata?.description);
+   console.log("contexts: ", contexts);
+   const contextString = contexts.join("\n");
 
-      const prompt = `
-      You are an advanced AI assistant designed to act as a second brain for the user, capable of processing and synthesizing complex information from various saved resources like YouTube links, Twitter posts, articles, and other references. Your task is to analyze the provided context and give precise, insightful, and actionable responses to the user's query.
+   const genericQueries = [
+     "hi",
+     "hello",
+     "who is the pm of india",
+   ];
+ 
+   if (genericQueries.includes(input.toLowerCase())) {
+     return handleGenericQuery(input);
+   }
 
-      Context:
-      ${contextString}
-
-      User Query:
-      ${input}
-
-      Instructions:
-      - Understand the context deeply and draw connections across different data points.
-      - Provide clear and concise answers that directly address the user's query.
-      - Where relevant, include references to specific sources or key details from the context.
-      - If the query requires synthesis or analysis, provide a thoughtful, well-reasoned response.
-
-      Answer:
-      `;
-
-      try {
-         //@ts-ignore
-         const result = await model.generateContent(prompt);
-         return result.response.text();
-      } catch (error) {
-         console.error("Error in AiPipeline:", error);
-         throw new Error("AI Pipeline failed");
-      }
-}
+   if (!contextString || contexts.length === 0) {
+     return "I'm sorry, I couldn't find relevant information for your query. Could you please clarify or provide more details?";
+   }
+ 
+   const genAI = new GoogleGenerativeAI(gemini_api_key);
+   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+ 
+   const prompt = `
+     You are an advanced AI assistant designed to act as a second brain for the user, capable of processing and synthesizing complex information from various saved resources like YouTube links, Twitter posts, articles, and other references. Your task is to analyze the provided context and give precise, insightful, and actionable responses to the user's query.
+ 
+     Context:
+     ${contextString}
+ 
+     User Query:
+     ${input}
+ 
+     Instructions:
+     - If the user asks a generic or irrelevant question (e.g., "Hi", "Who is the PM of India"), respond with a simple, appropriate answer without trying to analyze the context.
+     - Otherwise, deeply understand the context, draw connections across different data points, and provide clear, concise answers.
+     - Where relevant, include references to specific sources or key details from the context.
+     - If the query requires synthesis or analysis, provide a thoughtful, well-reasoned response.
+ 
+     Answer:
+   `;
+ 
+   try {
+     //@ts-ignore
+     const result = await model.generateContent(prompt);
+     return result.response.text();
+   } catch (error) {
+     console.error("Error in AiPipeline:", error);
+     throw new Error("AI Pipeline failed");
+   }
+ }
+ 
+ function handleGenericQuery(input: string) {
+   const genericResponses: { [key: string]: string } = {
+     hi: "Hello! How can I assist you today?",
+     hello: "Hi there! What can I help you with?",
+   };
+ 
+   const lowerCaseInput = input.toLowerCase();
+   if (genericResponses[lowerCaseInput]) {
+     return genericResponses[lowerCaseInput];
+   }
+ 
+   return "I'm here to assist you! Please provide more details or ask a specific question.";
+ }
+ 
 export const router=express.Router();
 
 
@@ -78,21 +109,20 @@ export const router=express.Router();
 //signup route
 router.post(`${URL}/signup`,async (req,res)=>{
    const {username,password}=req.body;
- 
-
-   const schema=z.object({
-      username:z.string().min(5,{message: "Must be 5 or more characters long"}),
-      password:z.string().min(4,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
-
-   })
-   const parsedData=schema.safeParse({username,password})
-   if(!parsedData.success){
-       res.status(401).json({
-        message: "Invalid data",
-        errors: parsedData.error.errors
-      });
-  }
    try {
+      const schema=z.object({
+         username:z.string().min(5,{message: "Must be 5 or more characters long"}),
+         password:z.string().min(4,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
+   
+      })
+      const parsedData=schema.safeParse({username,password})
+      if(!parsedData.success){
+          res.status(401).json({
+           message: "Invalid data",
+           errors: parsedData.error.errors
+         });
+         return;
+     }
       const hashedPassword=await bcrypt.hash(password,10);
       await User.create({
          username,
@@ -104,7 +134,7 @@ router.post(`${URL}/signup`,async (req,res)=>{
       })
    } catch (error) {
         console.error("Error during signup:", error);
-      res.status(500).json({
+        res.status(500).json({
           message: "User signup unsuccessful",
           error: error as any
       });
@@ -115,30 +145,33 @@ router.post(`${URL}/signup`,async (req,res)=>{
 //signin route
 router.post(`${URL}/signin`,async (req,res)=>{
    const { username, password } = req.body;
-   const schema=z.object({
-      username:z.string().min(5,{message: "Must be 5 or more characters long"}),
-      password:z.string().min(4,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
-
-   })
-   const parsedData=schema.safeParse({username,password})
-   if(!parsedData.success){
-       res.status(401).json({
-        message: "Invalid data",
-        errors: parsedData.error.errors
-      });
-  }
    try {
+      const schema=z.object({
+         username:z.string().min(5,{message: "Must be 5 or more characters long"}),
+         password:z.string().min(4,{message: "Must be 6 or more characters long"} ).max(20,{message: "Must be 20 or fewer characters long" })
+   
+      })
+      const parsedData=schema.safeParse({username,password})
+      if(!parsedData.success){
+          res.status(401).json({
+           message: "Invalid data",
+           errors: parsedData.error.errors
+         });
+         return;
+      }
       const user = await User.findOne({ username });
       if (!user) {
           res.status(403).json({
             message: 'Login unsuccessful. User not found.',
          });
+         return;
       }
       const isPasswordValid = await bcrypt.compare(password, user?.password || '');
       if (!isPasswordValid) {
           res.status(403).json({
             message: 'Login unsuccessful. Incorrect password.',
          });
+         return;
       }
       const token = jwt.sign({ id:  user?._id || '' }, JwtSecret );
       res.json({
@@ -218,7 +251,8 @@ router.delete(`${URL}/content`,authMiddleware,async (req,res)=>{
          _id:content_id,
          userId: req.body.userId
      })
- 
+      const ns = pcIndex.namespace('ns1');
+      await ns.deleteOne("dd6e5c6a-6819-45e7-b0f5-0464e29b4a03");
      res.json({
          message: "deleted content"
      })
