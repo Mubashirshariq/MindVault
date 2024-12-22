@@ -3,7 +3,7 @@ import { BACKEND_URL } from "../config";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-
+import toast from "react-hot-toast";
 type Inputs = {
   username: string;
   password: string;
@@ -19,9 +19,11 @@ export default function SignUp() {
     setApiError(null);
     try {
       await axios.post(`${BACKEND_URL}/signup`, data);
+      toast.success("Sign up successful. Please sign in.");
       navigate("/signin");
     } catch (error: any) {
       console.log("error", error);
+      toast.error("Sign up failed");
       if (error.response && error.response.data && error.response.data.message) {
         setApiError(error.response.data.message); 
       } else {

@@ -1,5 +1,4 @@
 import { NotesIcon } from "../icons/notesIcon";
-import ShareIcon from "../icons/shareIcon";
 import TrashIcon from "../icons/trashIcon";
 import TwitterIcon from "../icons/twitterIcon";
 import YoutubeIcon from "../icons/youtubeIcon";

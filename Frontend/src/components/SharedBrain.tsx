@@ -45,6 +45,7 @@ export default function SharedBrain() {
                                 type={value.type}
                                 link={value.link}
                                 content_id={value._id}
+                                refreshData={()=>{}}
                             />
                         ))}
                     </div>
