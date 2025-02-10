@@ -243,7 +243,7 @@ exports.router.delete(`${URL}/content`, authMiddleware_1.authMiddleware, (req, r
             userId: req.body.userId
         });
         const ns = pcIndex.namespace('ns1');
-        yield ns.deleteOne("38254fe7-5892-41e5-97e9-73d9d1728d93");
+        yield ns.deleteOne("dd6e5c6a-6819-45e7-b0f5-0464e29b4a03");
         res.json({
             message: "deleted content"
         });
